@@ -1,5 +1,8 @@
-from flask import Flask
-from flask import Flask, jsonify
+from flask import Flask, jsonify, g
+from flask_cors import CORS
+from resources.songs import song
+
+import models
 
 DEBUG = True
 PORT = 8000
@@ -8,20 +11,24 @@ PORT = 8000
 # This starts the website!
 app = Flask(__name__)
 
-# The default URL ends in / ("my-website.com/").
-@app.route('/')
-def index():
-    return 'Muse Flask Backend'
+@app.before_request
+def before_request():
+    """Connect to the database before each request."""
+    g.db = models.DATABASE
+    g.db.connect()
 
-@app.route('/json')
-def dog():
-    return jsonify( title = "New Kid In Town",
-                    artist = "Eagles",
-                    album = "Hotel California",
-                    created_at = "12/20/2020"
-                  )
+@app.after_request
+def after_request(response):
+    """Close the database connection after each request."""
+    g.db.close()
+    return response
+
+CORS(song, origins=['http://localhost:3000'], supports_credentials=True) # adding this line
+
+app.register_blueprint(song, url_prefix='/api/v1/songs') # adding this line
 
 # Run the app when the program starts!
 if __name__ == '__main__':
+    models.initialize()
     app.run(debug=DEBUG, port=PORT)
 

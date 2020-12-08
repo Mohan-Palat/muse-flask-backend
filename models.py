@@ -11,12 +11,12 @@ class Song(Model):
     artist = CharField()
     album = CharField()
     created_at = DateTimeField(default=datetime.datetime.now)
-    
+
     class Meta:
         database = DATABASE
 
 def initialize():
     DATABASE.connect()
-    DATABASE.create_tables([Dog], safe=True)
+    DATABASE.create_tables([Song], safe=True)
     print("TABLES Created")
     DATABASE.close()
